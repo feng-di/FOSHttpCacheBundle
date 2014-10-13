@@ -66,16 +66,21 @@ class FOSHttpCacheExtension extends Extension
         }
 
         if ($config['tags']['enabled']) {
-            // true or auto
-            $loader->load('tag_listener.xml');
-            if (!empty($config['tags']['rules'])) {
-                $this->loadTagRules($container, $config['tags']['rules']);
-            }
+            $bundles = $container->getParameter('kernel.bundles');
+            if (isset($bundles['SensioFrameworkExtraBundle'])) {
+                // true or auto
+                $loader->load('tag_listener.xml');
+                if (!empty($config['tags']['rules'])) {
+                    $this->loadTagRules($container, $config['tags']['rules']);
+                }
 
-            $tagsHeader = $config['tags']['header'];
-            $container->getDefinition($this->getAlias().'.cache_manager')
-                ->addMethodCall('setTagsHeader', array($tagsHeader))
-            ;
+                $tagsHeader = $config['tags']['header'];
+                $container->getDefinition($this->getAlias().'.cache_manager')
+                    ->addMethodCall('setTagsHeader', array($tagsHeader))
+                ;
+            } elseif (true === $config['tags']['enabled']) {
+                throw new InvalidConfigurationException('Tag support requires the SensioFrameworkExtraBundle');
+            }
         }
 
         if ($config['invalidation']['enabled']) {
